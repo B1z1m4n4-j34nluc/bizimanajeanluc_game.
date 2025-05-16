@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: 'Press Start 2P', cursive;
+            margin: 0;
+            background-image: linear-gradient(to bottom, #6ab7ff, #fff);
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px; /* Adjust padding for smaller screens */
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            min-height: 300px; /* Ensure some minimum height */
+            max-width: 90%; /* Limit width on larger screens */
+        }
+
+        h1 {
+            font-size: 1.75em; /* Adjust font size for smaller screens */
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px; /* Adjust margin */
+        }
+
+        button {
+            padding: 10px 20px; /* Adjust padding */
+            font-size: 0.9em; /* Adjust font size */
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            background-size: 200% auto;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 15px 0; /* Adjust margin */
+        }
+
+        button:hover {
+            background-position: right center;
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #start-game {
+            background-image: linear-gradient(to right, #667eea, #764ba2);
+        }
+
+        #game-board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px; /* Adjust gap for smaller screens */
+            margin-top: 15px; /* Adjust margin */
+            justify-content: center;
+            align-items: center;
+            width: 95%; /* Make board responsive within container */
+            max-width: 600px;
+            display: none;
+        }
+
+        .card {
+            width: calc(33.33% - 8px); /* Adjust card width for smaller screens, 3 cards wide */
+            height: calc(33.33vw - 8px); /* Make height relative to viewport width for square cards */
+            max-width: 80px; /* Limit maximum card width */
+            max-height: 80px; /* Limit maximum card height */
+            perspective: 1000px;
+        }
+
+        /* Adjust card width for very small screens */
+        @media (max-width: 400px) {
+            .card {
+                width: calc(50% - 8px); /* 2 cards wide on very small screens */
+                height: calc(50vw - 8px);
+            }
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em; /* Adjust font size for smaller cards */
+        }
+
+        .card-front {
+            background-color: #ddd;
+            background-image: linear-gradient(135deg, #eee 25%, #ccc 25%, #ccc 50%, #eee 50%, #eee 75%, #ccc 75%, #ccc 100%);
+            background-size: 15px 15px; /* Adjust background size */
+        }
+
+        .card-back {
+            background-color: #4CAF50;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .matched .card-inner {}
+
+        .matched .card-front {
+            opacity: 0.5;
+        }
+
+        .controls {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px; /* Adjust margin */
+        }
+
+        #message {
+            margin-top: 10px;
+            font-size: 1em; /* Adjust font size */
+            color: #555;
+        }
+
+        .theme-selector {
+            margin-top: 10px; /* Adjust margin */
+        }
+
+        .theme-selector h3 {
+            margin-bottom: 3px; /* Adjust margin */
+            font-size: 0.9em; /* Adjust font size */
+        }
+
+        .theme-selector label {
+            margin-right: 8px; /* Adjust margin */
+            font-size: 0.8em; /* Adjust font size */
+        }
+
+        /* Layout adjustments for different numbers of cards */
+        .board-small {
+            /* Inherits flex-wrap and justify-content */
+        }
+
+        .board-medium {
+            /* Inherits flex-wrap and justify-content */
+        }
+
+        .board-large {
+            max-width: 600px; /* Keep max width for larger layouts */
+        }
+
+        /* Theme Styles (adjust font sizes and paddings if needed for responsiveness) */
+        body.ocean-theme {
+            background-image: linear-gradient(to bottom, #a8dadc, #457b9d);
+        }
+
+        .container.ocean-theme {
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .card-front.ocean-theme {
+            background-color: #e0fbfc;
+            background-image: linear-gradient(135deg, #e0fbfc 25%, #cce3de 25%, #cce3de 50%, #e0fbfc 50%, #e0fbfc 75%, #cce3de 75%, #cce3de 100%);
+            background-size: 15px 15px;
+        }
+
+        .card-back.ocean-theme {
+            background-color: #1d3557;
+            color: #f1faee;
+        }
+
+        .controls.ocean-theme #start-game {
+            background-image: linear-gradient(to right, #457b9d, #1d3557);
+        }
+
+        .controls.ocean-theme #start-game:hover {
+            background-image: linear-gradient(to right, #1d3557, #457b9d);
+        }
+
+        body.nature-theme {
+            background-image: linear-gradient(to bottom, #8fbc8f, #2e8b57);
+        }
+
+        .container.nature-theme {
+            background-color: rgba(240, 255, 240, 0.7);
+            border: 1px solid rgba(240, 255, 240, 0.5);
+        }
+
+        .card-front.nature-theme {
+            background-color: #f0fff0;
+            background-image: linear-gradient(135deg, #f0fff0 25%, #e0eee0 25%, #e0eee0 50%, #f0fff0 50%, #f0fff0 75%, #e0eee0 75%, #e0eee0 100%);
+            background-size: 15px 15px;
+        }
+
+        .card-back.nature-theme {
+            background-color: #3cb371;
+            color: #fff;
+        }
+
+        .controls.nature-theme #start-game {
+            background-image: linear-gradient(to right, #2e8b57, #3cb371);
+        }
+
+        .controls.nature-theme #start-game:hover {
+            background-image: linear-gradient(to right, #3cb371, #2e8b57);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Memory Game</h1>
+        <button id="start-game">Start Game</button>
+        <div id="game-board"></div>
+        <div class="controls">
+            <p id="message"></p>
+            <div class="theme-selector">
+                <h3>Theme:</h3>
+                <label><input type="radio" name="theme" value="default" checked> Default</label>
+                <label><input type="radio" name="theme" value="ocean"> Ocean</label>
+                <label><input type="radio" name="theme" value="nature"> Nature</label>
+            </div>
+        </div>
+    </div>
+    <script>
+        const b = document.body, c = document.querySelector('.container'),
+            g = document.getElementById('game-board'), sb = document.getElementById('start-game'),
+            md = document.getElementById('message'), tr = document.querySelectorAll('input[name="theme"]');
+        let cards = [], fc = [], mc = [], level = 1, icons = ['🍎', '🍌', '🍒', '🍇', '🍓', '🥝', '🍋', '🍊'];
+
+        const gc = (l) => {
+            const np = l + 2, tc = np * 2, si = icons.slice(0, np), di = [...si, ...si].sort(() => Math.random() - 0.5);
+            cards = []; g.innerHTML = '';
+            di.forEach(icon => {
+                const card = document.createElement('div');
+                card.className = 'card'; card.dataset.icon = icon;
+                card.innerHTML = '<div class="card-inner"><div class="card-front"></div><div class="card-back">' + icon + '</div></div>';
+                card.onclick = flipCard; cards.push(card); g.appendChild(card);
+            });
+            ab(tc);
+        };
+        const ab = (tc) => { g.className = '';
+            if (tc <= 6) g.classList.add('board-small');
+            else if (tc <= 12) g.classList.add('board-medium');
+            else g.classList.add('board-large');
+            // Adjust card dimensions based on board size for responsiveness
+            const cardWidth = tc <= 6 ? 'calc(50% - 10px)' : (tc <= 12 ? 'calc(33.33% - 10px)' : 'calc(25% - 10px)');
+            const cardHeight = tc <= 6 ? 'calc(50vw - 10px)' : (tc <= 12 ? 'calc(33.33vw - 10px)' : 'calc(25vw - 10px)');
+            const maxCardSize = tc <= 6 ? '80px' : '60px';
+            g.querySelectorAll('.card').forEach(card => {
+                card.style.width = cardWidth;
+                card.style.height = cardHeight;
+                card.style.maxWidth = maxCardSize;
+                card.style.maxHeight = maxCardSize;
+                card.querySelector('.card-front').style.fontSize = tc <= 6 ? '1.5em' : '1em';
+                card.querySelector('.card-back').style.fontSize = tc <= 6 ? '1.5em' : '1em';
+            });
+        };
+        const flipCard = function() {
+            if (fc.length < 2 && !this.classList.contains('flipped') && !this.classList.contains('matched')) {
+                this.classList.add('flipped'); fc.push(this);
+                if (fc.length === 2) setTimeout(checkMatch, 800);
+            }
+        };
+        const checkMatch = () => {
+            const c1 = fc[0], c2 = fc[1];
+            if (c1.dataset.icon === c2.dataset.icon) {
+                c1.classList.add('matched'); c2.classList.add('matched'); mc.push(c1, c2);
+                md.textContent = mc.length === cards.length ? `Won level ${level}!` : 'Match!';
+                if (mc.length === cards.length) setTimeout(() => { level++; startGame(); }, 1500);
+            } else { c1.classList.remove('flipped'); c2.classList.remove('flipped'); md.textContent = 'No match.'; }
+            fc = [];
+        };
+        const startGame = () => { g.innerHTML = ''; fc = []; mc = []; md.textContent = ''; gc(level); g.style.display = 'flex'; sb.style.display = 'none'; };
+        sb.onclick = () => { level = 1; startGame(); };
+        tr.forEach(r => r.onchange = function() {
+            b.className = this.value + '-theme'; c.className = 'container ' + this.value + '-theme';
+            document.querySelector('.controls').className = 'controls ' + this.value + '-theme';
+            const cf = document.querySelectorAll('.card-front'), cb = document.querySelectorAll('.card-back');
+            cf.forEach(el => el.className = 'card-front' + (this.value === 'ocean' ? ' ocean-theme' : (this.value === 'nature' ? ' nature-theme' : '')));
+            cb.forEach(el => el.className = 'card-back' + (this.value === 'ocean' ? ' ocean-theme' : (this.value === 'nature' ? ' nature-theme' : '')));
+        });
+        // Initial state: show start button, hide game board
+        g.style.display = 'none';
+        sb.style.display = 'block';
+    </script>
+</body>
